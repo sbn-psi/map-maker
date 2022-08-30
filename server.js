@@ -16,9 +16,14 @@ require('./minio.js').bootstrap().then(expressSetup, error => {
     console.log("###### Starting server anyway #######")
     startServer()
 });
+
+
 const express = require('express')
 const app = express()
-app.use(express.json({ limit: '10MB' }))
+app.use(express.static('client/build'))
+app.use(express.json({ limit: '3MB' }))
+const fileUpload = require('express-fileupload');
+app.use(fileUpload())
 const helmet = require('helmet')
 app.use(helmet())
 
@@ -33,3 +38,4 @@ function startServer() {
         console.log(`running on port ${process.env.PORT}...`)
     })
 }
+

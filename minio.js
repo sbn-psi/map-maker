@@ -1,9 +1,8 @@
 module.exports = {
     bootstrap
 }
-const minioExpress = require('express-middleware-minio')
-const middleware = minioExpress.middleware()
 const Minio = require('minio')
+const { Readable } = require('stream')
 
 let readPolicy = (bucket, directory) => `{
     "Version": "2012-10-17",
@@ -60,6 +59,8 @@ let readPolicy = (bucket, directory) => `{
     ]
 }`
 
+let minioClient
+
 async function bootstrap() {
     const bucket = process.env.MINIO_BUCKET
     let config = {
@@ -71,7 +72,7 @@ async function bootstrap() {
     if(!!process.env.MINIO_PORT) {
         config.port = parseInt(process.env.MINIO_PORT)
     }
-    let minioClient = new Minio.Client(config)
+    minioClient = new Minio.Client(config)
 
     return new Promise((resolve, reject) => {
         let setPolicy = () => {
@@ -98,12 +99,16 @@ async function bootstrap() {
 }
 
 function uploadHandler(req, res) {
-    let imageBaseUrl = `${process.env.MINIO_SECURITY === 'true' ? 'https' : 'http'}://${process.env.MINIO_ENDPOINT}${process.env.MINIO_PORT ? ':' + process.env.MINIO_PORT : ''}/${process.env.MINIO_BUCKET}/${process.env.MINIO_UPLOADS_FOLDER_NAME}/`
-    middleware({op: minioExpress.Ops.post})(req, res, () => {
-        if (req.minio.error) {
-            res.status(400).json({ error: req.minio.error })
+    let imageBaseUrl = `${process.env.MINIO_SECURITY === 'true' ? 'https' : 'http'}://${process.env.MINIO_ENDPOINT}${process.env.MINIO_PORT ? ':' + process.env.MINIO_PORT : ''}/${process.env.MINIO_BUCKET}/`
+
+    const file = req.files.File
+    const name = `${process.env.MINIO_UPLOADS_FOLDER_NAME}/${file.md5}${file.name}`
+
+    minioClient.putObject(process.env.MINIO_BUCKET, name, file.data, {'Content-Type': file.mimetype}, (err, etag) => {
+        if (err) {
+            res.status(400).json({ error: err })
         } else {
-            res.send({ url: imageBaseUrl + req.minio.post.filename })
+            res.send({ url: imageBaseUrl + name })
         }
     })
 }
