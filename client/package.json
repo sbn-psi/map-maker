@@ -1,5 +1,5 @@
 {
-  "name": "map-maker",
+  "name": "sgis-loader-client",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
