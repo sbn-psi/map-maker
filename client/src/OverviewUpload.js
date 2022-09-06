@@ -1,16 +1,44 @@
-import React, {useState} from 'react';
+import React, {useState, useRef} from 'react';
 import ImageUploader from "./components/ImageUploader";
+import Canvas from './components/Canvas'
 
-function OverviewUpload() {
+function OverviewMaker() {
   const [imageUrl, setImageUrl] = useState(null)
 
   return (<>
-    <h1>Let's start with the overview map</h1>
+    {imageUrl ? 
+      <Overview imageUrl={imageUrl}/> :
+      <Uploader callback={setImageUrl}/>
+    }
+  </>
+  )
+  
+}
+
+export default OverviewMaker;
+
+function Uploader({callback}) {
+  return (<>
+    <h1>Upload an overview map</h1>
     { 
-      imageUrl ? <img src={imageUrl}/>
-        : <ImageUploader handler={setImageUrl}/>
+      <ImageUploader handler={callback}/>
     }
   </>);
 }
 
-export default OverviewUpload;
+function Overview({imageUrl}) {
+  const img = useRef(null) 
+
+  const plotImage = (ctx) => {
+    ctx.drawImage(img.current, 0, 0)
+  }
+
+  const width = img.current?.naturalWidth || 1000
+  const height = img.current?.naturalHeight || 1000
+
+  return <>
+    <img ref={img} src={imageUrl} style={{display: 'none'}} crossOrigin="anonymous"/>
+    <Canvas ctx={plotImage} width={width} height={height}/>
+  </>
+
+}
