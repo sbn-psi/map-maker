@@ -34,8 +34,8 @@ function expressSetup(minioHandler) {
 }
 
 function startServer() {
-    app.listen(process.env.PORT, () => {
-        console.log(`running on port ${process.env.PORT}...`)
+    app.listen(8686, () => {
+        console.log(`running on port 8686...`)
     })
 }
 
