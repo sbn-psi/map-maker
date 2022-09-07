@@ -13,19 +13,32 @@ function Canvas({ context, click, width, height, ...rest }: AppProps) {
   
   useEffect(() => {
     
-    const canvas = canvasRef.current!
-    const ctx = canvas.getContext('2d')!
+    const canvas = canvasRef.current
+    const ctx = canvas?.getContext('2d')
+    if(canvas && ctx) {
+  
+      // set up scaling
+      const { devicePixelRatio:ratio=1 } = window
+      canvas.width = width*ratio
+      canvas.height = height*ratio
+      ctx.scale(ratio, ratio)
+      
+      // pass back the 2d context for draws
+      context(ctx)
 
-    const { devicePixelRatio:ratio=1 } = window
-    canvas.width = width*ratio
-    canvas.height = height*ratio
-    ctx.scale(ratio, ratio)
-    
-    // pass back this context for draws
-    context(ctx)
+      // set up click handling
+      canvas.addEventListener('mousedown', event => {
+        const rect = canvas.getBoundingClientRect()
+        const x = event.clientX - rect.left
+        const y = event.clientY - rect.top
+        click(x, y)
+      })
+    }
   }, [context, width, height])
   
-  return <canvas width={width} height={height} ref={canvasRef} {...rest}></canvas>
+  return <canvas width={width} height={height} ref={canvasRef} {...rest}>
+    Your browser does not support canvas, please use another
+  </canvas>
 }
 
 export default Canvas

@@ -42,7 +42,7 @@ function Overview({imageUrl}) {
 
   return <>
     <img ref={img} src={imageUrl} style={{display: 'none'}} crossOrigin="anonymous"/>
-    <Canvas context={plotImage} clicks={clickHandler} width={width} height={height}/>
+    <Canvas context={plotImage} click={clickHandler} width={width} height={height}/>
   </>
 
 }
