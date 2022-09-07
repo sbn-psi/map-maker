@@ -33,12 +33,16 @@ function Overview({imageUrl}) {
     ctx.drawImage(img.current, 0, 0)
   }
 
+  const clickHandler = (x, y) => {
+    console.log(`${x}, ${y}`)
+  }
+
   const width = img.current?.naturalWidth || 1000
   const height = img.current?.naturalHeight || 1000
 
   return <>
     <img ref={img} src={imageUrl} style={{display: 'none'}} crossOrigin="anonymous"/>
-    <Canvas ctx={plotImage} width={width} height={height}/>
+    <Canvas context={plotImage} clicks={clickHandler} width={width} height={height}/>
   </>
 
 }
