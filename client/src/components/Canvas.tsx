@@ -25,16 +25,23 @@ function Canvas({ context, click, width, height, ...rest }: AppProps) {
       
       // pass back the 2d context for draws
       context(ctx)
+      console.log(ctx)
 
       // set up click handling
-      canvas.addEventListener('mousedown', event => {
+      const listener = (event: MouseEvent) => {
         const rect = canvas.getBoundingClientRect()
         const x = event.clientX - rect.left
         const y = event.clientY - rect.top
         click(x, y)
-      })
-    }
-  }, [context, width, height])
+      }
+      canvas.addEventListener('mousedown', listener)
+      return () => {
+        //cleanup
+        canvas?.removeEventListener('mousedown', listener)
+      }
+    } 
+
+  }, [click, context, width, height])
   
   return <canvas width={width} height={height} ref={canvasRef} {...rest}>
     Your browser does not support canvas, please use another
