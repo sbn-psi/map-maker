@@ -1,13 +1,13 @@
 import React, {useRef, useEffect} from 'react'
 
-type AppProps = {
+type CanvasProps = {
   context: (ctx: CanvasRenderingContext2D) => void
   click: (x: number, y: number) => void
   width: number,
   height: number
 };
 
-function Canvas({ context, click, width, height, ...rest }: AppProps) {  
+function Canvas({ context, click, width, height, ...rest }: CanvasProps) {  
   
   const canvasRef = useRef<HTMLCanvasElement>(null)
   
@@ -25,7 +25,6 @@ function Canvas({ context, click, width, height, ...rest }: AppProps) {
       
       // pass back the 2d context for draws
       context(ctx)
-      console.log(ctx)
 
       // set up click handling
       const listener = (event: MouseEvent) => {

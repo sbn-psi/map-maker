@@ -101,14 +101,19 @@ async function bootstrap() {
 function uploadHandler(req, res) {
     let imageBaseUrl = `${process.env.MINIO_SECURITY === 'true' ? 'https' : 'http'}://${process.env.MINIO_ENDPOINT}${process.env.MINIO_PORT ? ':' + process.env.MINIO_PORT : ''}/${process.env.MINIO_BUCKET}/`
 
-    const file = req.files.File
-    const name = `${process.env.MINIO_UPLOADS_FOLDER_NAME}/${file.md5}${file.name}`
+    let puts = []
+    let results = []
+    for (fileName of Object.keys(req.files)) {
 
-    minioClient.putObject(process.env.MINIO_BUCKET, name, file.data, {'Content-Type': file.mimetype}, (err, etag) => {
-        if (err) {
-            res.status(400).json({ error: err })
-        } else {
-            res.send({ url: imageBaseUrl + name })
-        }
+        const file = req.files[fileName]
+        const name = `${process.env.MINIO_UPLOADS_FOLDER_NAME}/${file.md5}${file.name}`
+    
+        puts.push(minioClient.putObject(process.env.MINIO_BUCKET, name, file.data, {'Content-Type': file.mimetype}))
+        results.push({ name: fileName, url: imageBaseUrl + name })
+    }
+    Promise.all(puts).then(success => {
+        res.send(results)
+    }, err => {
+        res.status(400).send(err)
     })
 }
