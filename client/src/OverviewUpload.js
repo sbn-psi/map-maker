@@ -1,16 +1,17 @@
 import React, {useState, useEffect, useRef} from 'react';
 import ImageUploader from "./components/ImageUploader";
 import Canvas from './components/Canvas'
+import {Box} from '@mui/material';
 
-function OverviewMaker() {
+function OverviewMaker({sx, ...other}) {
   const [imageUrl, setImageUrl] = useState(null)
 
-  return (<>
+  return (<Box sx={sx}>
     {imageUrl ? 
       <Overview imageUrl={imageUrl}/> :
-      <Uploader callback={setImageUrl}/>
+      <Uploader callback={setImageUrl} {...other}/>
     }
-  </>
+  </Box>
   )
   
 }
@@ -18,28 +19,34 @@ function OverviewMaker() {
 export default OverviewMaker;
 
 function Uploader({callback}) {
-  return (<>
+  return (<Box sx={{p: 1}}>
     <h1>Upload an overview map</h1>
     { 
       <ImageUploader handler={callback}/>
     }
-  </>);
+  </Box>);
 }
 
-function Overview({imageUrl}) {
+function Overview({imageUrl, activeZone}) {
   const [drawContext, setDrawContext] = useState(null)
   const [loaded, setLoaded] = useState(false)
   const img = useRef(null) 
 
   
   const clickHandler = (x, y) => {
-    console.log(`${x}, ${y}`)
+    console.log(`click ${x}, ${y}`)
+  }
+
+  const mouseHandler = (x, y) => {
+    if(!!activeZone) {
+      console.log(`move ${x}, ${y}`)
+    }
   }
   
   const width = img.current?.naturalWidth || 1000
   const height = img.current?.naturalHeight || 1000
   
-  if(loaded) {
+  if(loaded && drawContext) {
     drawContext.drawImage(img.current, 0, 0)
   }
 
@@ -50,13 +57,13 @@ function Overview({imageUrl}) {
     img.current.addEventListener('load', listener)
 
     return function cleanup() {
-      img.current.removeEventListener('load', listener)
+      img.current?.removeEventListener('load', listener)
     }
   }, [])
 
   return <>
     <img ref={img} src={imageUrl} style={{display: 'none'}} crossOrigin="anonymous"/>
-    <Canvas context={setDrawContext} click={clickHandler} width={width} height={height}/>
+    <Canvas context={setDrawContext} click={clickHandler} move={mouseHandler} width={width} height={height}/>
   </>
 
 }

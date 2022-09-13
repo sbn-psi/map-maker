@@ -26,6 +26,7 @@ export default function ImageUploader({handler, cardinality = "single"}: Props){
 
 		web.post('/image/upload', formData).then(resp => {
 			handler(cardinality == 'single' ? resp.data[0].url : resp.data)
+			setSelectedFiles(null)
 		}, err => {
 			console.error(err)
 		})
