@@ -1,9 +1,10 @@
 import React, {useState} from 'react';
 import web from 'axios';
 import Button from '@mui/material/Button';
+import { Zone } from '../AppState';
 
 type Props = {
-	handler: (url: string) => void,
+	handler: (response: [Zone]) => void,
 	cardinality: "multiple" | "single"
 }
 
@@ -25,7 +26,7 @@ export default function ImageUploader({handler, cardinality = "single"}: Props){
 		}
 
 		web.post('/image/upload', formData).then(resp => {
-			handler(cardinality == 'single' ? resp.data[0].url : resp.data)
+			handler(resp.data)
 			setSelectedFiles(null)
 		}, err => {
 			console.error(err)
