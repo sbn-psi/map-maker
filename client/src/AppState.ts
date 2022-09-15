@@ -1,14 +1,20 @@
 export class AppState {
-    readonly workflow: 'initial' | 'overviewUpload' | 'zoneUpload' | 'zoneMapping' | 'complete' = 'initial'
+    readonly workflow: 'overviewUpload' | 'zoneUpload' | 'zoneMapping' | 'complete' = 'overviewUpload'
     readonly canvas: 'default' | 'corner1' | 'corner2' = 'default'
     readonly currentZone: Zone | null = null
-    readonly set: (prop: 'workflow' | 'canvas' | 'currentZone', val: any) => AppState = (prop, val) => {
-        
+    readonly set: (...state: StatePair[]) => AppState = (...states) => {
         let obj = Object.assign({}, this)
-        Object.assign(obj, { [prop]: val})
+        for(let state of states) {
+            Object.assign(obj, { [state[0]]: state[1]})
+        }
         return obj
     }
 }
+
+type StatePair = [
+    prop: 'workflow' | 'canvas' | 'currentZone', 
+    val: any
+]
 
 type Zone = {
     name: string
