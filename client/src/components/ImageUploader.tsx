@@ -39,7 +39,7 @@ export default function ImageUploader({handler, cardinality = "single"}: Props){
 				component="label"
 				>
 				Select File
-				<input type="file" name="file" onChange={changeHandler} hidden multiple={cardinality == "multiple"}/>
+				<input type="file" name="file" onChange={changeHandler} hidden multiple={cardinality == "multiple"} accept=".jpg, .png, .jpeg, .gif, .bmp|image/*"/>
 				</Button>
             {selectedFiles && <>
 				<ul>
