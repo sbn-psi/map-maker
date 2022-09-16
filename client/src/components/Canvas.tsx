@@ -48,7 +48,7 @@ function Canvas({ context, click, move, width, height }: CanvasProps) {
       }
     } 
 
-  }, [ctx, click, context, width, height])
+  }, [ctx, canvas, click, move, context, width, height])
   
   return <canvas width={width} height={height} ref={canvasRef}>
     Your browser does not support canvas, please use another

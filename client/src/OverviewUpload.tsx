@@ -2,19 +2,20 @@ import React, {useState, useEffect, useRef} from 'react';
 import ImageUploader from "./components/ImageUploader";
 import Canvas from './components/Canvas'
 import {Box} from '@mui/material';
-import {AppState, Zone, StatePasser} from './AppState';
+import { useAppState, useAppStateDispatch } from './AppStateContext';
 
-function OverviewMaker({sx, state, setState}: StatePasser & {sx: any}) {
+function OverviewMaker({sx}: {sx: any}) {
   const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const dispatch = useAppStateDispatch()
 
   return (<Box sx={sx}>
     {imageUrl ? 
-      <Overview imageUrl={imageUrl} state={state} setState={setState}/> :
+      <Overview imageUrl={imageUrl}/> :
       <Box sx={{p: 1}}>
         <h1>Upload an overview map</h1>
         { 
           <ImageUploader handler={overview => {
-            setState(state.set(['workflow', 'zoneUpload']))
+            dispatch({type: 'UPLOADED_OVERVIEW'})
             setImageUrl(overview[0].url)
           }} cardinality="single"/>
         }
@@ -27,10 +28,11 @@ function OverviewMaker({sx, state, setState}: StatePasser & {sx: any}) {
 
 export default OverviewMaker;
 
-function Overview({imageUrl, state, setState}: StatePasser & {imageUrl: string}) {
+function Overview({imageUrl}: {imageUrl: string}) {
   const [drawContext, setDrawContext] = useState<CanvasRenderingContext2D | null>(null)
   const [loaded, setLoaded] = useState<boolean>(false)
   const img = useRef<HTMLImageElement>(null) 
+  const state = useAppState()
 
   
   const clickHandler = (x: number, y: number) => {
