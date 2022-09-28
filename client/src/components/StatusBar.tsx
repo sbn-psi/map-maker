@@ -8,9 +8,9 @@ export default function StatusBar() {
     let caption = ''
     if (state.currentZone) {
         if (state.canvas === 'corner1') {
-            caption = 'Place the first corner'
+            caption = 'Place the top left corner'
         } else {
-            caption = 'Place the second corner'
+            caption = 'Place the bottom right corner'
         }
     } else {
         if (state.workflow === 'overviewUpload') {
