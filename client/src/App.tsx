@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import './App.css';
 import OverviewUpload from './components/OverviewUpload';
-import {Box, Card, CardMedia, CardActionArea, Typography, CardContent, Grid} from '@mui/material';
+import {Box, Card, CardMedia, CardActionArea, Typography, CardContent, Grid, Button} from '@mui/material';
 import ImageUploader from './components/ImageUploader';
 import {AppState, Zone } from './AppState';
 import { AppStateProvider, useAppState, useAppStateDispatch } from './AppStateContext';
@@ -22,7 +22,7 @@ function App() {
             <Grid item xs={9} sx={{ height: '100%'}} >
               <OverviewContents sx={{height: '100%', width: '100%', overflow: 'auto'}}/>
             </Grid>
-            <Grid item xs={3} sx={{ height: '100%', overflowY: 'auto'}} >
+            <Grid item xs={3} sx={{ height: '100%', overflowY: 'auto', borderLeft: '1px solid darkgrey'}} >
               <SidebarContents/>
             </Grid>
 
@@ -40,11 +40,15 @@ function OverviewContents({sx}: {sx: any}) {
 }
 
 function SidebarContents() {
-  const [zones, setZones] = useState<Array<Zone>>([])
+  let [zones, setZones] = useState<Array<Zone>>([])
   const state:AppState = useAppState()
   const dispatchState = useAppStateDispatch()
 
-  return <>
+  zones = zones.sort((a, b) => (a.corner1 && a.corner2) ? 1 : -1)
+  const showButton = zones.length > 0 && zones.every((zone) => zone.corner1 && zone.corner2)
+
+  return <Box sx={{p: 1}}>
+    {showButton && <Button sx={{my: 1, width: '100%'}} variant="contained">Save and Exit</Button>}
     {zones.map((zone, index) => <SampleZone key={index} zone={zone} 
       clickHandler={() => {
         dispatchState({type: 'CLICKED_ZONE', zone: zone})
@@ -59,7 +63,7 @@ function SidebarContents() {
         dispatchState({type: 'UPLOADED_ZONES', zones: uploads})
       }} cardinality="multiple"/>
     }
-  </>
+  </Box>
 }
 
 function SampleZone({zone, clickHandler, active, completed}: {zone: Zone, clickHandler: () => void, active: boolean, completed: boolean}) {
