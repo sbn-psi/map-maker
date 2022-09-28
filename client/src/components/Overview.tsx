@@ -19,7 +19,7 @@ export function Overview({sx}: {sx: any}) {
     const clickHandler = (x: number, y: number) => {
       if (state.canvas === 'corner1') {
         dispatchState({type: 'CLICKED_CORNER', x, y});
-      } else if (state.canvas === 'corner2') {
+      } else if (state.canvas === 'corner2' && x > state.currentZone!.corner1!.x && y > state.currentZone!.corner1!.y) {
         dispatchState({type: 'COMPLETED_ZONE', x, y});
       }
     };
