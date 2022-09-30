@@ -69,6 +69,9 @@ export function Overview({sx}: {sx: any}) {
   // draw the current state
   if (loaded && drawContext) {
     drawContext.drawImage(img.current!, 0, 0);
+    for(let zone of state.mappedZones) {
+      drawZone(zone, drawContext);
+    }
     if(state.currentZone?.corner1) {
       let x = state.currentZone.corner1.x, y = state.currentZone.corner1.y;
       drawFirstCorner(x, y, drawContext);
@@ -78,10 +81,6 @@ export function Overview({sx}: {sx: any}) {
         drawContext.drawImage((document.getElementById(state.currentZone.name) as HTMLImageElement)!, x, y, state.mousePosition.x - x, state.mousePosition.y - y);
         drawContext.globalAlpha = 1
       }
-    }
-    for(let zone of state.mappedZones) {
-      console.log('drawing', zone);
-      drawZone(zone, drawContext);
     }
   }
 

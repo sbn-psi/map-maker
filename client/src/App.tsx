@@ -56,7 +56,7 @@ function SidebarContents() {
       active={state.currentZone ? zones.indexOf(state.currentZone) === index : false} 
       completed={state.mappedZones.includes(zone)}/>)}
       
-    <h1>Upload area images:</h1>
+    <h1>Upload sample zone images</h1>
     { 
       <ImageUploader handler={uploads => {
         setZones([...zones, ...uploads])

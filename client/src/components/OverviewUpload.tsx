@@ -7,7 +7,7 @@ function OverviewMaker({sx}: {sx: any}) {
   const dispatch = useAppStateDispatch()
 
   return (<Box sx={{...sx, p: 1}}>
-      <h1>Upload an overview map</h1>
+      <h1>Upload an overview image</h1>
       { 
         <ImageUploader handler={overview => {
           dispatch({type: 'UPLOADED_OVERVIEW', overview: overview[0]})
