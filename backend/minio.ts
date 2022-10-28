@@ -1,10 +1,7 @@
-module.exports = {
-    bootstrap
-}
-const Minio = require('minio')
-const { Readable } = require('stream')
+export default bootstrap
+import Minio from 'minio'
 
-let readPolicy = (bucket, directory) => `{
+const readPolicy = (bucket: String, directory: String) => `{
     "Version": "2012-10-17",
     "Statement": [
         {
@@ -59,15 +56,15 @@ let readPolicy = (bucket, directory) => `{
     ]
 }`
 
-let minioClient
+let minioClient: Minio.Client
 
 async function bootstrap() {
-    const bucket = process.env.MINIO_BUCKET
-    let config = {
-        endPoint: process.env.MINIO_ENDPOINT,
+    const bucket = process.env.MINIO_BUCKET!
+    let config: Minio.ClientOptions = {
+        endPoint: process.env.MINIO_ENDPOINT!,
         useSSL: process.env.MINIO_SECURITY === 'true',
-        accessKey: process.env.MINIO_ACCESS_KEY || process.env.MINIO_ROOT_USER,
-        secretKey: process.env.MINIO_SECRET_KEY || process.env.MINIO_ROOT_PASSWORD
+        accessKey: process.env.MINIO_ACCESS_KEY || process.env.MINIO_ROOT_USER!,
+        secretKey: process.env.MINIO_SECRET_KEY || process.env.MINIO_ROOT_PASSWORD!
     }
     if(!!process.env.MINIO_PORT) {
         config.port = parseInt(process.env.MINIO_PORT)
@@ -76,8 +73,8 @@ async function bootstrap() {
 
     return new Promise((resolve, reject) => {
         let setPolicy = () => {
-            let policy = readPolicy(bucket, process.env.MINIO_UPLOADS_FOLDER_NAME)
-            minioClient.setBucketPolicy(process.env.MINIO_BUCKET, policy, (err) => {
+            let policy = readPolicy(bucket, process.env.MINIO_UPLOADS_FOLDER_NAME!)
+            minioClient.setBucketPolicy(process.env.MINIO_BUCKET!, policy, (err) => {
                 err ? reject(err) : resolve(uploadHandler)
             })
         }
@@ -89,7 +86,7 @@ async function bootstrap() {
 
             if(!exists) {
                 console.log(`bucket ${bucket} didn't exist, creating`)
-                minioClient.makeBucket(bucket).then(setPolicy, reject)
+                minioClient.makeBucket(bucket, 'us-east-1').then(setPolicy, reject)
             } else {
                 setPolicy()
             }
@@ -98,17 +95,17 @@ async function bootstrap() {
     })
 }
 
-function uploadHandler(req, res) {
+function uploadHandler(req: any, res: any) {
     let imageBaseUrl = `${process.env.MINIO_SECURITY === 'true' ? 'https' : 'http'}://${process.env.MINIO_ENDPOINT}${process.env.MINIO_PORT ? ':' + process.env.MINIO_PORT : ''}/${process.env.MINIO_BUCKET}/`
 
     let puts = []
-    let results = []
-    for (fileName of Object.keys(req.files)) {
+    let results: { name: string; url: string }[] = []
+    for (let fileName of Object.keys(req.files)) {
 
         const file = req.files[fileName]
         const name = `${process.env.MINIO_UPLOADS_FOLDER_NAME}/${file.md5}${file.name}`
     
-        puts.push(minioClient.putObject(process.env.MINIO_BUCKET, name, file.data, {'Content-Type': file.mimetype}))
+        puts.push(minioClient.putObject(process.env.MINIO_BUCKET!, name, file.data, {'Content-Type': file.mimetype}))
         results.push({ name: fileName, url: imageBaseUrl + name })
     }
     Promise.all(puts).then(success => {

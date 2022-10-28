@@ -1,14 +1,12 @@
-// internal modules
-
-// env setup
-if(!process.env.MINIO_ACCESS_KEY) {
-    console.log('using local .env file')
-    require('dotenv').config({ path: '.env' })
-}
+import express from 'express'
+import fileUpload from 'express-fileupload'
+import helmet from 'helmet'
+import './envsetup.js'
 
 // express, minio setup
 console.log('connecting to file server...')
-require('./minio.js').bootstrap().then(expressSetup, error => {
+import bootstrap from './backend/minio.js'
+bootstrap().then(expressSetup, error => {
     console.log("############# ERROR #################")
     console.log("##### Couldn't connect to Minio #####")
     console.log(error)
@@ -16,23 +14,20 @@ require('./minio.js').bootstrap().then(expressSetup, error => {
     startServer()
 });
 
-
-const express = require('express')
 const app = express()
 app.use(express.static('client/build'))
 app.use(express.json({ limit: '3MB' }))
-const fileUpload = require('express-fileupload');
 app.use(fileUpload())
-const helmet = require('helmet')
 app.use(helmet())
 
 // called once file server is bootstrapped; starts the actual listening process
-function expressSetup(minioHandler) {
+function expressSetup(minioHandler: any) {
     app.use('/image/upload', minioHandler)
     startServer()
 }
 
-app.use('/api', require('./api.js'))
+import api from './backend/api.js'
+app.use('/api', api)
 
 function startServer() {
     app.listen(8686, () => {

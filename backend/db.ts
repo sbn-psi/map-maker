@@ -1,7 +1,8 @@
-const pg = require('knex')({
+import pkg from 'knex'
+const pg = pkg.knex({
     client: 'pg',
     connection: process.env.PG_CONNECTION_STRING,
     searchPath: ['public'],
 });
 
-module.exports = pg;
+export default pg;
