@@ -1,5 +1,4 @@
 // internal modules
-const db = require('./db.js')
 
 // env setup
 if(!process.env.MINIO_ACCESS_KEY) {
@@ -32,6 +31,8 @@ function expressSetup(minioHandler) {
     app.use('/image/upload', minioHandler)
     startServer()
 }
+
+app.use('/api', require('./api.js'))
 
 function startServer() {
     app.listen(8686, () => {
