@@ -1,11 +1,15 @@
+// libs
 import express from 'express'
 import fileUpload from 'express-fileupload'
 import helmet from 'helmet'
-import './envsetup.js'
+
+// internal modules
+import './envsetup.js' // must be first to set up environment variables
+import bootstrap from './backend/minio.js'
+import api from './backend/api.js'
 
 // express, minio setup
 console.log('connecting to file server...')
-import bootstrap from './backend/minio.js'
 bootstrap().then(expressSetup, error => {
     console.log("############# ERROR #################")
     console.log("##### Couldn't connect to Minio #####")
@@ -26,7 +30,6 @@ function expressSetup(minioHandler: any) {
     startServer()
 }
 
-import api from './backend/api.js'
 app.use('/api', api)
 
 function startServer() {
