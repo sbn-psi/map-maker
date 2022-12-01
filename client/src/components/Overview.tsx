@@ -13,6 +13,7 @@ export function Overview({sx}: {sx: any}) {
   const state:AppState = useAppState();
   const interactions:InteractionState = useInteractionState();
   const dispatchInteraction = useInteractionStateDispatch()
+  const dispatchState = useAppStateDispatch();
   const canvas = useAppCanvas();
   let drawContext = canvas?.getContext('2d');
 
@@ -22,6 +23,10 @@ export function Overview({sx}: {sx: any}) {
 
       if (!!interactions.selectedCorner) {
         dispatchInteraction({type: 'PLACED_CORNER', corner: interactions.selectedCorner, x: x, y: y})
+        interactions.selectedZone![interactions.selectedCorner] = {x: x, y: y}
+        if(interactions.selectedZone!.top && interactions.selectedZone!.left && interactions.selectedZone!.bottom) {
+          dispatchState({type: 'MAPPED_ZONE', zone: interactions.selectedZone!})
+        }
       } else if(!!interactions.selectedZone) {
         // calculate if click was on a corner
         for(let corner of Object.values(Corners)) {
@@ -121,22 +126,26 @@ function drawZone(zone: Zone, ctx: CanvasRenderingContext2D) {
 
   // calculate tilt
   const angle = Math.atan2(zone.left.y - zone.top.y, zone.left.x - zone.top.x);
+
+  let width = (angle > 0.5 ? zone.left.x - zone.top.x : zone.top.x - zone.left.x) * 2;
+
   
   // set translate (relative origin) and rotation angle for the drawing context so that image has proper tilt
   ctx.save();
   ctx.translate(zone.top.x, zone.top.y);
   ctx.rotate(angle);
+  ctx.drawImage((document.getElementById(zone.name) as HTMLImageElement)!, 0, 0, zone.left.x - zone.top.x, zone.bottom.y - zone.top.y);
   ctx.strokeStyle = "#43FF33";
   ctx.rect(0, 0, zone.left.x - zone.top.x, zone.bottom.y - zone.top.y);
   ctx.stroke();
-  ctx.drawImage((document.getElementById(zone.name) as HTMLImageElement)!, 0, 0, zone.left.x, zone.bottom.y);
   ctx.restore(); // resets to previous state
 }
 
 function drawCorner(x: number, y: number, ctx: CanvasRenderingContext2D, selected: boolean) {
   ctx.save();
   ctx.strokeStyle = "#FF0000";
-  ctx.fillStyle = selected ? "DD0000" : "#FFFFFF";
+  ctx.fillStyle = selected ? "#DD0000" : "#FFFFFF";
+  ctx.beginPath();
   ctx.arc(x, y, 5, 0, 2 * Math.PI);
   ctx.fill();
   ctx.stroke();

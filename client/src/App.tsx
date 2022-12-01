@@ -73,7 +73,7 @@ function SidebarContents() {
 function SampleZone({zone, clickHandler, active, completed}: {zone: Zone, clickHandler: () => void, active: boolean, completed: boolean}) {
   let color = active ? 'lightblue' : completed ? 'lightgreen' : 'white'
   return <Card sx={{backgroundColor: color, margin: '5px'}}>
-    <CardActionArea onClick={completed ? undefined : clickHandler}>
+    <CardActionArea onClick={clickHandler}>
       <CardMedia image={zone.url} sx={{height: 100}}/>
       <CardContent>
         <Typography variant="body2" color="text.secondary">
