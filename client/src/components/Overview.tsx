@@ -3,30 +3,40 @@ import Canvas from './Canvas';
 import { useAppState, useAppStateDispatch } from '../AppStateContext';
 import { useAppCanvas } from '../CanvasContext';
 import { getMousePos } from '../getMousePos';
-import { AppState, Zone } from '../AppState';
+import { AppState, InteractionState, Zone, Corners } from '../AppState';
 import { Box } from '@mui/material';
+import { useInteractionState, useInteractionStateDispatch } from '../InteractionStateContext';
 
 export function Overview({sx}: {sx: any}) {
   const [loaded, setLoaded] = useState<boolean>(false);
   const img = useRef<HTMLImageElement>(null);
   const state:AppState = useAppState();
-  const dispatchState = useAppStateDispatch()
+  const interactions:InteractionState = useInteractionState();
+  const dispatchInteraction = useInteractionStateDispatch()
   const canvas = useAppCanvas();
   let drawContext = canvas?.getContext('2d');
 
   // setup click handlers for canvas
   useEffect(() => {
     const clickHandler = (x: number, y: number) => {
-      if (state.canvas === 'corner1') {
-        dispatchState({type: 'CLICKED_CORNER', x, y});
-      } else if (state.canvas === 'corner2' && x > state.currentZone!.corner1!.x && y > state.currentZone!.corner1!.y) {
-        dispatchState({type: 'COMPLETED_ZONE', x, y});
+
+      if (!!interactions.selectedCorner) {
+        dispatchInteraction({type: 'PLACED_CORNER', corner: interactions.selectedCorner, x: x, y: y})
+      } else if(!!interactions.selectedZone) {
+        // calculate if click was on a corner
+        for(let corner of Object.values(Corners)) {
+          let coords = interactions.selectedZone[corner]
+          if (Math.abs(coords!.x - x) < 10 && Math.abs(coords!.y - y) < 10) {
+            dispatchInteraction({type: 'SELECTED_CORNER', corner: corner})
+            return
+          }
+        }
       }
     };
 
     const mouseHandler = (x: number, y: number) => {
-      if (!!state.currentZone) {
-        dispatchState({type: 'MOUSE_OVER_ZONE', x, y});
+      if (!!interactions.selectedZone) {
+        dispatchInteraction({type: 'MOUSE_OVER_ZONE', x, y});
       }
     };
     if (!!canvas) {
@@ -49,7 +59,7 @@ export function Overview({sx}: {sx: any}) {
         canvas?.removeEventListener('mousemove', moveListener);
       };
     }
-  }, [state]);
+  }, [state, interactions]);
 
   // setup image load listener so we rerender when it happens
   useEffect(() => {
@@ -68,17 +78,30 @@ export function Overview({sx}: {sx: any}) {
 
   // draw the current state
   if (loaded && drawContext) {
+    // overview image
     drawContext.drawImage(img.current!, 0, 0);
+
+    // mapped zones
     for(let zone of state.mappedZones) {
       drawZone(zone, drawContext);
     }
-    if(state.currentZone?.corner1) {
-      let x = state.currentZone.corner1.x, y = state.currentZone.corner1.y;
-      drawFirstCorner(x, y, drawContext);
+
+    // corners
+    if(interactions.selectedZone?.top) {
+      for(let corner of Object.values(Corners)) {
+        const coords = interactions.selectedZone![corner]
+        if(coords) drawCorner(coords.x, coords.y, drawContext, corner === interactions.selectedCorner);
+      };
       
-      if(state.mousePosition) {
+    }
+
+    // draw interacting zone if we have at least two corners
+    if(interactions.selectedZone && interactions.selectedCorner && interactions.mousePosition) {
+      let cornersPlaced = [interactions.selectedZone.left, interactions.selectedZone.top, interactions.selectedZone.bottom].filter((c) => !!c).length;
+      if(cornersPlaced >= 2) {
         drawContext.globalAlpha = 0.4
-        drawContext.drawImage((document.getElementById(state.currentZone.name) as HTMLImageElement)!, x, y, state.mousePosition.x - x, state.mousePosition.y - y);
+        let tempZone = {...interactions.selectedZone, [interactions.selectedCorner]: interactions.mousePosition}
+        drawZone(tempZone, drawContext);
         drawContext.globalAlpha = 1
       }
     }
@@ -87,27 +110,35 @@ export function Overview({sx}: {sx: any}) {
 
   return <Box sx={sx}>
     <img ref={img} src={state.overview!.url} style={{ display: 'none' }} crossOrigin="anonymous" />
-    {state.unmappedZones.map((zone: Zone) => <img id={zone.name} src={zone.url} style={{ display: 'none' }} crossOrigin="anonymous" />)}
+    {state.unmappedZones.map((zone: Zone) => <img id={zone.name} key={zone.name} src={zone.url} style={{ display: 'none' }} crossOrigin="anonymous" />)}
     <Canvas width={width} height={height} />
   </Box>;
 
 }
 
 function drawZone(zone: Zone, ctx: CanvasRenderingContext2D) {
+  if(!(zone.left && zone.top && zone.bottom)) return;
+
+  // calculate tilt
+  const angle = Math.atan2(zone.left.y - zone.top.y, zone.left.x - zone.top.x);
+  
+  // set translate (relative origin) and rotation angle for the drawing context so that image has proper tilt
+  ctx.save();
+  ctx.translate(zone.top.x, zone.top.y);
+  ctx.rotate(angle);
   ctx.strokeStyle = "#43FF33";
-  ctx.rect(zone.corner1!.x, zone.corner1!.y, zone.corner2!.x - zone.corner1!.x, zone.corner2!.y - zone.corner1!.y);
+  ctx.rect(0, 0, zone.left.x - zone.top.x, zone.bottom.y - zone.top.y);
   ctx.stroke();
-  ctx.drawImage((document.getElementById(zone.name) as HTMLImageElement)!, zone.corner1!.x, zone.corner1!.y, zone.corner2!.x - zone.corner1!.x, zone.corner2!.y - zone.corner1!.y);
+  ctx.drawImage((document.getElementById(zone.name) as HTMLImageElement)!, 0, 0, zone.left.x, zone.bottom.y);
+  ctx.restore(); // resets to previous state
 }
 
-function drawFirstCorner(x: number, y: number, ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = "#FF0000";
-  ctx.fillRect(x, y, 20, 3);
-  ctx.fillRect(x, y, 3, 20);
-}
-
-function drawSecondCorner(x: number, y: number, ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = "#FF0000";
-  ctx.fillRect(x-20, y-3, x, y);
-  ctx.fillRect(x-3, y-20, x, y);
+function drawCorner(x: number, y: number, ctx: CanvasRenderingContext2D, selected: boolean) {
+  ctx.save();
+  ctx.strokeStyle = "#FF0000";
+  ctx.fillStyle = selected ? "DD0000" : "#FFFFFF";
+  ctx.arc(x, y, 5, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore(); // resets to previous state
 }

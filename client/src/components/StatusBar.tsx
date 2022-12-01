@@ -1,16 +1,23 @@
 import { Typography } from "@mui/material"
+import { AppState, InteractionState } from "../AppState"
 import { useAppState } from "../AppStateContext"
+import { useInteractionState } from "../InteractionStateContext"
 
 
 export default function StatusBar() {
-    let state = useAppState()
+    let state:AppState = useAppState()
+    let interactions:InteractionState = useInteractionState()
 
     let caption = ''
-    if (state.currentZone) {
-        if (state.canvas === 'corner1') {
-            caption = 'Place the top left corner'
-        } else {
+    if (interactions.selectedZone) {
+        if (interactions.selectedCorner === 'top') {
+            caption = 'Place the top-left corner of the image'
+        } else if (interactions.selectedCorner === 'left') {
+            caption = 'Place the top-right corner of the image' // yes, this is called left. sorry.
+        } else if(interactions.selectedCorner === 'bottom') {
             caption = 'Place the bottom right corner'
+        } else {
+            caption = 'Click a corner to move it'
         }
     } else {
         if (state.workflow === 'overviewUpload') {
