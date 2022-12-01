@@ -4,6 +4,7 @@ import db from './db.js'
 import { adaptInputToModel } from './adapters.js'
 import { Zone } from './model.js'
 
+// !!!!! UNUSED FOR NOW - frontend generates JSON
 router.post('/zones', (req, res) => {
     let zones: Zone[] = []
     try {

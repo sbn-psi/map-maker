@@ -1,3 +1,4 @@
+// !!!!! UNUSED FOR NOW - frontend generates JSON
 import { Zone,Sample } from "./model.js"
 
 export function adaptInputToModel(input: any): {zones: Zone[], samples: Sample[]} {

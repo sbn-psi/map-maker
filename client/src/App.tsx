@@ -52,7 +52,7 @@ function SidebarContents() {
   const showButton = zones.length > 1 && (state.mappedZones.length == zones.length)
 
   return <Box sx={{p: 1}}>
-    {showButton && <Button sx={{my: 1, width: '100%'}} variant="contained">Save and Exit</Button>}
+    {showButton && <Button sx={{my: 1, width: '100%'}} variant="contained" onClick={() => download(state)}>Save and Download</Button>}
     {zones.map((zone, index) => <SampleZone key={index} zone={zone} 
       clickHandler={() => {
         dispatchInteraction({type: 'CLICKED_ZONE', zone: zone})
@@ -92,3 +92,14 @@ function SampleZone({zone, clickHandler, active, completed}: {zone: Zone, clickH
 }
 
 export default App;
+
+function download(state: AppState) {
+  const saveState = {overview: state.overview, zones: state.mappedZones }
+  const data = new Blob([JSON.stringify(saveState, null, '\t')], {type: 'application/json'});
+  const url = window.URL.createObjectURL(data);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', 'data.json');
+  document.body.appendChild(link);
+  link.click();
+}
