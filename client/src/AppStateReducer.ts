@@ -10,14 +10,14 @@ export const stateReducer = (state: AppState, action: Action) => {
         case "UPLOADED_OVERVIEW":
             return {
                 ...state,
-                workflow: 'zoneUpload',
+                workflow: state.unmappedZones ? 'zoneMapping' : 'zoneUpload',
                 overview: action.overview
             };
         case "UPLOADED_ZONES":
             return {
                 ...state,
                 unmappedZones: [state.unmappedZones, action.zones].flat(),
-                workflow: 'zoneMapping',
+                workflow: state.overview ? 'zoneMapping' : 'overviewUpload',
             };
         case "MAPPED_ZONE":
             return {

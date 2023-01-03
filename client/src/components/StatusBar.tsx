@@ -17,7 +17,7 @@ export default function StatusBar() {
         } else if(interactions.selectedCorner === 'bottom') {
             caption = 'Place the bottom right corner'
         } else {
-            caption = 'Click a corner to move it'
+            caption =  'This zone is complete'//'Click a corner to move it'
         }
     } else {
         if (state.workflow === 'overviewUpload') {

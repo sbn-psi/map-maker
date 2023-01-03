@@ -28,15 +28,15 @@ export function Overview({sx}: {sx: any}) {
         if(interactions.selectedZone?.isComplete()) {
           dispatchState({type: 'MAPPED_ZONE', zone: interactions.selectedZone!})
         }
-      } else if(!!interactions.selectedZone) {
-        // calculate if click was on a corner
-        for(let corner of Object.values(Corners)) {
-          let coords = interactions.selectedZone[corner]
-          if (Math.abs(coords!.x - x) < 10 && Math.abs(coords!.y - y) < 10) {
-            dispatchInteraction({type: 'SELECTED_CORNER', corner: corner})
-            return
-          }
-        }
+      // } else if(!!interactions.selectedZone) {
+      //   // calculate if click was on a corner
+      //   for(let corner of Object.values(Corners)) {
+      //     let coords = interactions.selectedZone[corner]
+      //     if (Math.abs(coords!.x - x) < 10 && Math.abs(coords!.y - y) < 10) {
+      //       dispatchInteraction({type: 'SELECTED_CORNER', corner: corner})
+      //       return
+      //     }
+      //   }
       }
     };
 
@@ -108,9 +108,9 @@ export function Overview({sx}: {sx: any}) {
         drawContext.globalAlpha = 0.4
         let tempZone = {...interactions.selectedZone, [interactions.selectedCorner]: interactions.mousePosition}
         tempZone.height = findHeight(tempZone.left!, tempZone.bottom!)
-        if(interactions.selectedCorner === Corners.Bottom) {
-          correctBottomCorner(tempZone, interactions.mousePosition)
-        }
+        // if(interactions.selectedCorner === Corners.Bottom) {
+        //   correctBottomCorner(tempZone, interactions.mousePosition)
+        // }
         drawZone(tempZone, drawContext);
         drawContext.globalAlpha = 1
       }
@@ -159,15 +159,15 @@ function drawZone(zone: Zone, ctx: CanvasRenderingContext2D) {
 }
 
 // WIP
-function correctBottomCorner(zone: Zone, mousePosition: {x: number, y: number}) {
-  if(!zone.top || !zone.left) return;
+// function correctBottomCorner(zone: Zone, mousePosition: {x: number, y: number}) {
+//   if(!zone.top || !zone.left) return;
 
-  // calculate angle between top and mouse
-  const angle = Math.atan2(zone.top.y - mousePosition.y, zone.top.x - mousePosition.x);
+//   // calculate angle between top and mouse
+//   const angle = Math.atan2(zone.top.y - mousePosition.y, zone.top.x - mousePosition.x);
 
-  if(zone.left.y > zone.top.y) {
-    // left is below top
-  } else {
-    // left is above top
-  }
-}
+//   if(zone.left.y > zone.top.y) {
+//     // left is below top
+//   } else {
+//     // left is above top
+//   }
+// }
