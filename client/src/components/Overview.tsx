@@ -21,12 +21,13 @@ export function Overview({sx}: {sx: any}) {
   // setup click handlers for canvas
   useEffect(() => {
     const clickHandler = (x: number, y: number) => {
-
-      if (!!interactions.selectedCorner) {
-        dispatchInteraction({type: 'PLACED_CORNER', corner: interactions.selectedCorner, x: x, y: y})
-        interactions.selectedZone![interactions.selectedCorner] = {x: x, y: y}
-        if(interactions.selectedZone?.isComplete()) {
-          dispatchState({type: 'MAPPED_ZONE', zone: interactions.selectedZone!})
+      const selectedZone = interactions.selectedZone;
+      const selectedCorner = interactions.selectedCorner;
+      if (!!selectedCorner) {
+        dispatchInteraction({type: 'PLACED_CORNER', corner: selectedCorner, x: x, y: y})
+        selectedZone![interactions.selectedCorner] = {x: x, y: y}
+        if(selectedZone?.isComplete()) {
+          dispatchState({type: 'MAPPED_ZONE', zone: selectedZone!})
         }
       // } else if(!!interactions.selectedZone) {
       //   // calculate if click was on a corner

@@ -49,7 +49,7 @@ function SidebarContents() {
   const dispatchInteraction = useInteractionStateDispatch()
 
   zones = zones.sort((a, b) => a.isComplete() ? 1 : -1)
-  const showButton = zones.length > 1 && (state.mappedZones.length == zones.length)
+  const showButton = zones.length > 0 && (state.mappedZones.length == zones.length)
 
   return <Box sx={{p: 1}}>
     {showButton && <Button sx={{my: 1, width: '100%'}} variant="contained" onClick={() => download(state)}>Save and Download</Button>}
