@@ -11,13 +11,20 @@ export class InteractionState {
     readonly selectedCorner: 'top' | 'left' | 'bottom' | null = null
 }
 
-export type Zone = {
+export class Zone {
     name: string
     url: string
-    top: { x: number, y: number } | null
-    left: { x: number, y: number } | null
-    bottom: { x: number, y: number } | null
-    // right: { x: number, y: number } | null
+    top?: { x: number, y: number }
+    left?: { x: number, y: number }
+    bottom?: { x: number, y: number }
+    height?: number
+    isComplete: () => boolean = () => {
+        return !!this.top && !!this.left && !!(this.bottom || this.height)
+    }
+    constructor(name: string, url: string) {
+        this.name = name
+        this.url = url
+    }
 }
 
 export enum Corners

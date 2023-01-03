@@ -26,7 +26,7 @@ export default function ImageUploader({handler, cardinality = "single"}: Props){
 		}
 
 		web.post('/image/upload', formData).then(resp => {
-			handler(resp.data)
+			handler(resp.data.map((zone: any) => new Zone(zone.name, zone.url)))
 			setSelectedFiles(null)
 		}, err => {
 			console.error(err)

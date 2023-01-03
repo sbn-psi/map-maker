@@ -48,7 +48,7 @@ function SidebarContents() {
   const dispatchState = useAppStateDispatch()
   const dispatchInteraction = useInteractionStateDispatch()
 
-  zones = zones.sort((a, b) => (a.top && a.left && a.bottom ) ? 1 : -1)
+  zones = zones.sort((a, b) => a.isComplete() ? 1 : -1)
   const showButton = zones.length > 1 && (state.mappedZones.length == zones.length)
 
   return <Box sx={{p: 1}}>

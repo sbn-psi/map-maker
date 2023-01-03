@@ -6,6 +6,7 @@ import { getMousePos } from '../getMousePos';
 import { AppState, InteractionState, Zone, Corners } from '../AppState';
 import { Box } from '@mui/material';
 import { useInteractionState, useInteractionStateDispatch } from '../InteractionStateContext';
+import {findBottomCorner, findHeight, findWidth} from '../math' ;
 
 export function Overview({sx}: {sx: any}) {
   const [loaded, setLoaded] = useState<boolean>(false);
@@ -24,7 +25,7 @@ export function Overview({sx}: {sx: any}) {
       if (!!interactions.selectedCorner) {
         dispatchInteraction({type: 'PLACED_CORNER', corner: interactions.selectedCorner, x: x, y: y})
         interactions.selectedZone![interactions.selectedCorner] = {x: x, y: y}
-        if(interactions.selectedZone!.top && interactions.selectedZone!.left && interactions.selectedZone!.bottom) {
+        if(interactions.selectedZone?.isComplete()) {
           dispatchState({type: 'MAPPED_ZONE', zone: interactions.selectedZone!})
         }
       } else if(!!interactions.selectedZone) {
@@ -64,7 +65,7 @@ export function Overview({sx}: {sx: any}) {
         canvas?.removeEventListener('mousemove', moveListener);
       };
     }
-  }, [state, interactions]);
+  }, [interactions]);
 
   // setup image load listener so we rerender when it happens
   useEffect(() => {
@@ -106,6 +107,10 @@ export function Overview({sx}: {sx: any}) {
       if(cornersPlaced >= 2) {
         drawContext.globalAlpha = 0.4
         let tempZone = {...interactions.selectedZone, [interactions.selectedCorner]: interactions.mousePosition}
+        tempZone.height = findHeight(tempZone.left!, tempZone.bottom!)
+        if(interactions.selectedCorner === Corners.Bottom) {
+          correctBottomCorner(tempZone, interactions.mousePosition)
+        }
         drawZone(tempZone, drawContext);
         drawContext.globalAlpha = 1
       }
@@ -121,26 +126,6 @@ export function Overview({sx}: {sx: any}) {
 
 }
 
-function drawZone(zone: Zone, ctx: CanvasRenderingContext2D) {
-  if(!(zone.left && zone.top && zone.bottom)) return;
-
-  // calculate tilt
-  const angle = Math.atan2(zone.left.y - zone.top.y, zone.left.x - zone.top.x);
-
-  let width = (angle > 0.5 ? zone.left.x - zone.top.x : zone.top.x - zone.left.x) * 2;
-
-  
-  // set translate (relative origin) and rotation angle for the drawing context so that image has proper tilt
-  ctx.save();
-  ctx.translate(zone.top.x, zone.top.y);
-  ctx.rotate(angle);
-  ctx.drawImage((document.getElementById(zone.name) as HTMLImageElement)!, 0, 0, zone.left.x - zone.top.x, zone.bottom.y - zone.top.y);
-  ctx.strokeStyle = "#43FF33";
-  ctx.rect(0, 0, zone.left.x - zone.top.x, zone.bottom.y - zone.top.y);
-  ctx.stroke();
-  ctx.restore(); // resets to previous state
-}
-
 function drawCorner(x: number, y: number, ctx: CanvasRenderingContext2D, selected: boolean) {
   ctx.save();
   ctx.strokeStyle = "#FF0000";
@@ -150,4 +135,39 @@ function drawCorner(x: number, y: number, ctx: CanvasRenderingContext2D, selecte
   ctx.fill();
   ctx.stroke();
   ctx.restore(); // resets to previous state
+}
+
+function drawZone(zone: Zone, ctx: CanvasRenderingContext2D) {
+  if(!(zone.left && zone.top && zone.height)) return;
+
+  // calculate tilt
+  const angle = Math.atan2(zone.left.y - zone.top.y, zone.left.x - zone.top.x);
+
+  const height = zone.height
+  const width = findWidth(zone.top, zone.left);
+  
+  // set translate (relative origin) and rotation angle for the drawing context so that image has proper tilt
+  ctx.save();
+  ctx.translate(zone.top.x, zone.top.y);
+  ctx.rotate(angle);
+  ctx.drawImage((document.getElementById(zone.name) as HTMLImageElement)!, 0, 0, width, height);
+  ctx.strokeStyle = "#43FF33";
+  ctx.rect(0, 0, width, height);
+  ctx.stroke();
+  ctx.restore(); // resets to previous state
+  
+}
+
+// WIP
+function correctBottomCorner(zone: Zone, mousePosition: {x: number, y: number}) {
+  if(!zone.top || !zone.left) return;
+
+  // calculate angle between top and mouse
+  const angle = Math.atan2(zone.top.y - mousePosition.y, zone.top.x - mousePosition.x);
+
+  if(zone.left.y > zone.top.y) {
+    // left is below top
+  } else {
+    // left is above top
+  }
 }

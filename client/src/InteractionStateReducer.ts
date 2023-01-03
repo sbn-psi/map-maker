@@ -1,4 +1,5 @@
-import { InteractionState, Zone } from './AppState'
+import { Corners, InteractionState, Zone } from './AppState'
+import { findBottomCorner, findHeight } from './math';
 
 type Action =
     { type: 'CLICKED_ZONE', zone: Zone | null }
@@ -11,7 +12,6 @@ const cornerOrder: ('top' | 'left' | 'bottom')[] = ['top', 'left', 'bottom']
 export const stateReducer = (state: InteractionState, action: Action) => {
     switch (action.type) {
         case "CLICKED_ZONE":
-            console.log("CLICKED_ZONE")
             if(state.selectedZone === action.zone) {
                 return {
                     ...state,
@@ -33,7 +33,13 @@ export const stateReducer = (state: InteractionState, action: Action) => {
                 selectedCorner: action.corner
             };
         case "PLACED_CORNER":
-            state.selectedZone![action.corner] = { x: action.x, y: action.y }
+            if(action.corner === Corners.Bottom) {
+                state.selectedZone!.height = findHeight(state.selectedZone!.left!, {x: action.x, y: action.y})
+                state.selectedZone!.bottom = findBottomCorner(state.selectedZone!.top!, state.selectedZone!.left!, state.selectedZone!.height)
+            } else {
+                state.selectedZone![action.corner] = { x: action.x, y: action.y }
+            }
+            // }
             let currentCorner = cornerOrder.indexOf(action.corner)
             let nextCorner = currentCorner + 1 <= cornerOrder.length ? cornerOrder[currentCorner + 1] : null
             // set the next corner if it's not already placed
