@@ -16,6 +16,7 @@ export default function ImageUploader({handler, cardinality = "single"}: Props){
 		setSelectedFiles(target.files)
 	};
 
+	let fileDimensions:{[key: string]: {width: number, height: number}} = {}
 	const handleSubmission = () => {
 		if(!selectedFiles) return
 
@@ -23,10 +24,13 @@ export default function ImageUploader({handler, cardinality = "single"}: Props){
 
 		for(let file of Array.from(selectedFiles)) {
 			formData.append(file.name, file)
+			getUploadedFileDimensions(file).then(dimensions => {
+				fileDimensions[file.name] = dimensions
+			})
 		}
 
 		web.post('/image/upload', formData).then(resp => {
-			handler(resp.data.map((zone: any) => new Zone(zone.name, zone.url)))
+			handler(resp.data.map((zone: any) => Zone.fromJson({...zone, naturalWidth: fileDimensions[zone.name].width, naturalHeight: fileDimensions[zone.name].height})))
 			setSelectedFiles(null)
 		}, err => {
 			console.error(err)
@@ -55,3 +59,24 @@ export default function ImageUploader({handler, cardinality = "single"}: Props){
 		</div>
 	)
 }
+
+function getUploadedFileDimensions(file: File) {
+	return new Promise<{width: number, height: number}>((resolve, reject) => {
+		try {
+			let img = new Image()
+
+			img.onload = () => {
+				const width  = img.naturalWidth,
+					height = img.naturalHeight
+
+				window.URL.revokeObjectURL(img.src)
+
+				return resolve({width, height})
+			}
+
+			img.src = window.URL.createObjectURL(file)
+		} catch (exception) {
+			return reject(exception)
+		}
+	}
+)}
